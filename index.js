@@ -6,11 +6,14 @@ app.use(express.json())
 const morgan = require('morgan')
 // app.use(morgan('tiny'))
 
+const cors = require('cors')
+app.use(cors())
+
 const newPerson = (req, res, next) => {
     // console.log('req: ', req)
     const person = {
         name: req.body.name,
-        number: req.body.number,
+        number: req.body.number
     }
     return JSON.stringify(person)
 }
@@ -106,7 +109,7 @@ const generateId = () => {
     return newId
 }
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
