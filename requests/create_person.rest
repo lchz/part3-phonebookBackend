@@ -1,7 +1,18 @@
 POST http://localhost:3001/api/persons
 Content-Type: application/json
 
+# {
+#     "name": "abcccc",
+#     "number": "123-234"
+# }
+
+# {
+#     # "name": "abcccc",
+#     "number": "123-234"
+# }
 {
-    "name": "abcccc",
+    "name": "a",
     "number": "123-234"
 }
+###
+GET http://localhost:3001/api/persons

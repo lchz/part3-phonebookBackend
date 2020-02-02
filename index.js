@@ -66,25 +66,25 @@ app.delete('/api/persons/:id', morgan('tiny'), (req, res, next) => {
             .catch(error => next(error))
 })
 
-app.post('/api/persons', morgan(':method :url :status :res[content-length] - :response-time ms :personToken'), (req, res) => {
+app.post('/api/persons', morgan(':method :url :status :res[content-length] - :response-time ms :personToken'), (req, res, next) => {
     const body = req.body
 
-    if (body.name === undefined) {
-        return res.status(400).json({
-            error: 'name cannot be empty'
-        })
-    } else if (body.number === undefined) {
-        return res.status(400).json({
-            error: 'number cannot be empty'
-        })
-    }
+    // if (body.name === undefined) {
+    //     return res.status(400).json({
+    //         error: 'name cannot be empty'
+    //     })
+    // } else if (body.number === undefined) {
+    //     return res.status(400).json({
+    //         error: 'number cannot be empty'
+    //     })
+    // }
 
-    Person.find({}, (error, people) => {
-        if (people.find(p => p.name === body.name)) {
-            return res.status(400).json({
-                error: 'Name must be unique.'
-            })
-        } else {
+    // Person.find({}, (error, people) => {
+        // if (people.find(p => p.name === body.name)) {
+        //     return res.status(400).json({
+        //         error: 'Name must be unique.'
+        //     })
+        // } else {
             const newPerson = new Person({
                 name: body.name,
                 number: body.number
@@ -93,8 +93,9 @@ app.post('/api/persons', morgan(':method :url :status :res[content-length] - :re
             newPerson.save().then(savedPerson => {
                 res.json(savedPerson.toJSON())
             })
-        }
-    })
+            .catch(e => next(e))
+        // }
+    // })
 })
 
 app.put('/api/persons/:id', morgan('tiny'), (req, res, next) => {
@@ -120,6 +121,8 @@ const errorHandler = (error, req, res, next) => {
 
     if (error.name === 'CastError' && error.kind === 'ObjectId') {
         return res.status(400).send({error: 'malformatted id'})
+    } else if (error.name === 'ValidationError') {
+        return res.status(400).send({error: error.message})
     }
 
     next(error)
