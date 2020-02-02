@@ -8,3 +8,7 @@ GET http://localhost:3001/info
 
 ###
 DELETE http://localhost:3001/api/persons/5e3717f7a007976f20bf93c7
+
+###
+PUT http://localhost:3001/api/persons/5e3717f7a007976f20bf93c7
+Content-Type: application/json

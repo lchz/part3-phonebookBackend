@@ -27,7 +27,7 @@ require('dotenv').config()
 const Person = require('./models/person')
 
 
-
+/** Routes */
 app.get('/api/persons', morgan('tiny'), (req, res) => {
     Person.find({}).then(people => {
         res.json(people.map(p => p.toJSON()))
@@ -97,11 +97,22 @@ app.post('/api/persons', morgan(':method :url :status :res[content-length] - :re
     })
 })
 
+app.put('/api/persons/:id', morgan('tiny'), (req, res, next) => {
+    const body = req.body
 
-const unknowEndpoint = (req, res) => {
-    res.status(404).send({error: 'Unknown endpoint'})
-}
-app.use(unknowEndpoint)
+    const person = {
+        name: body.name,
+        number: body.number
+    }
+
+    Person.findByIdAndUpdate(req.params.id, person, {new : true})
+            .then(updatedPerson => {
+                res.json(updatedPerson.toJSON())
+            })
+            .catch(e => next(e))
+})
+
+
 
 /** Error handler middleware*/
 const errorHandler = (error, req, res, next) => {
