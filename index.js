@@ -12,6 +12,7 @@ app.use(express.static('build'))
 const morgan = require('morgan')
 // app.use(morgan('tiny'))
 
+/** POST morgan middleware */
 const newPerson = (req, res, next) => {
     const person = {
         name: req.body.name,
@@ -26,28 +27,6 @@ require('dotenv').config()
 const Person = require('./models/person')
 
 
-// let persons = [
-//     {
-//         "name": "Arto Hellas",
-//         "number": "222-555",
-//         "id": 1
-//       },
-//       {
-//         "name": "Ada Lovelace",
-//         "number": "39-44-5323523",
-//         "id": 2
-//       },
-//       {
-//         "name": "Dan Abramov",
-//         "number": "12-43-234345",
-//         "id": 3
-//       },
-//       {
-//         "name": "Mary Poppendieck",
-//         "number": "39-23-6423122",
-//         "id": 4
-//       },
-// ]
 
 app.get('/api/persons', morgan('tiny'), (req, res) => {
     Person.find({}).then(people => {
@@ -56,35 +35,30 @@ app.get('/api/persons', morgan('tiny'), (req, res) => {
 })
 
 app.get('/info', morgan('tiny'), (req, res) => {
-    // Person.countDocuments({}).then(result => {
-    //     const response = {
-    //         count: `Phonebook has info for ${result} people`,
-    //         date: new Date().toString()
-    //     }
-
-    //     JSON.stringify(response)
-
-        // res.toString(result.toString())
-        // res.json(response.toJSON())
-        // res.write(`Phonebook has info for ${result} people\n\n`)
-        // res.write(new Date().toString())
-        // res.send()
-    // })
+    
+    Person.countDocuments({}).then(result => {
+        res.write(`Phonebook has info for ${result} people\n\n`)
+        res.write(new Date().toString())
+        res.send()
+    })
 
 })
 
-app.get('/api/persons/:id', morgan('tiny'), (req, res) => {
+app.get('/api/persons/:id', morgan('tiny'), (req, res, next) => {
 
     Person.findById(req.params.id).then(person => {
-        res.json(person.toJSON())
+        if (person) {
+            res.json(person.toJSON())
+        } else {
+            console.log('ID not found')
+            res.status(404).end()
+        }
     })
-    .catch((e) => {
-        console.log('Not found error:', e.message)
-        res.status(404).end()
-    })
+    .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', morgan('tiny'), (req, res, next) => {
+
     Person.findByIdAndDelete(req.params.id)
             .then(result => {
                 res.status(204).end()
@@ -124,6 +98,11 @@ app.post('/api/persons', morgan(':method :url :status :res[content-length] - :re
 })
 
 
+const unknowEndpoint = (req, res) => {
+    res.status(404).send({error: 'Unknown endpoint'})
+}
+app.use(unknowEndpoint)
+
 /** Error handler middleware*/
 const errorHandler = (error, req, res, next) => {
     console.log('Error message:', error.message)
@@ -135,6 +114,7 @@ const errorHandler = (error, req, res, next) => {
     next(error)
 }
 app.use(errorHandler)
+
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
